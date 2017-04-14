@@ -174,28 +174,41 @@ def quantize_img(img, options):
                 
     return new_img
 
-def add_lines(img):
+def add_lines_and_symbols(img, color_order):
     """
     Makes an expanded version of the final template, where each pixel is outlined with a
     black box and every 10 pixels there is a light blue line (the same as which shows up
-    on the latch hook canvas).
+    on the latch hook canvas). Also puts symbols (numbers) in each box corresponding to
+    the numbers in the stats image.
     """
+    square_width = 20
     rows, cols = img.shape[:2]
-    new_img = cv2.resize(img, (cols*10, rows*10))
+    new_img = cv2.resize(img, (cols*square_width, rows*square_width))
     for i in range(0, cols):
         for j in range(0, rows):
             pixel = img[j, i]
-            for ii in range(0, 8):
-                for jj in range(0, 8):
-                    new_img[j*10 + jj, i*10 + ii] = pixel
+            for ii in range(0, square_width - 2):
+                for jj in range(0, square_width - 2):
+                    new_img[j*square_width + jj, i*square_width + ii] = pixel
             if i % 10 == 9 and i > 0:
-                cv2.line(new_img, (i*10+9, j*10), (i*10+9, j*10+9), (255,204,51), 2)
+                cv2.line(new_img, (i*square_width+square_width-1, j*square_width), (i*square_width+square_width-1, j*square_width+square_width-1), (255,204,51), 2)
             else:
-                cv2.line(new_img, (i*10+9, j*10), (i*10+9, j*10+9), (0,0,0), 2)
+                cv2.line(new_img, (i*square_width+square_width-1, j*square_width), (i*square_width+square_width-1, j*square_width+square_width-1), (0,0,0), 2)
             if j % 10 == 9 and j > 0:
-                cv2.line(new_img, (i*10, j*10+9), (i*10+9, j*10+9), (255,204,51), 2)
+                cv2.line(new_img, (i*square_width, j*square_width+square_width-1), (i*square_width+square_width-1, j*square_width+square_width-1), (255,204,51), 2)
             else:
-                cv2.line(new_img, (i*10, j*10+9), (i*10+9, j*10+9), (0,0,0), 2)
+                cv2.line(new_img, (i*square_width, j*square_width+square_width-1), (i*square_width+square_width-1, j*square_width+square_width-1), (0,0,0), 2)
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            pixelStr = '%.2x%.2x%.2x' % (pixel[2], pixel[1], pixel[0])
+            number_color = (0, 0, 0)
+            if max(pixel) < 175:
+                number_color = (255, 255, 255)
+            if color_order[pixelStr] < 10:
+                cv2.putText(new_img, str(color_order[pixelStr]), (i*square_width+6, j*square_width+12), font, 0.3,number_color,1,cv2.LINE_AA)
+            else:
+                cv2.putText(new_img, str(color_order[pixelStr]), (i*square_width+2, j*square_width+12), font, 0.3,number_color,1,cv2.LINE_AA)
+
+
     return new_img
 
 def make_color_stats(img):
@@ -220,15 +233,24 @@ def make_color_stats(img):
                 colors[color] = 1
                 
     stats_img = np.ones((len(colors)*width, 250, 3), dtype=np.uint8)*255
+    color_order = {}
     i = 0
     for color, num_strings in colors.iteritems():
+        color_order[color] = i
         stats_img[i*width + 2: i*width + 19, 2:19] = [[[int(color[4:6], 16), int(color[2:4], 16), int(color[0:2], 16)]] * 17] * 17
         font = cv2.FONT_HERSHEY_SIMPLEX
+        number_color = (0, 0, 0)
+        if max(int(color[4:6], 16), int(color[2:4], 16), int(color[0:2], 16)) < 175:
+            number_color = (255, 255, 255)
+        if i >= 10:
+            cv2.putText(stats_img, str(i), (3, i*width+15), font, 0.3,number_color,1,cv2.LINE_AA)
+        else:
+            cv2.putText(stats_img, str(i), (7, i*width+15), font, 0.3,number_color,1,cv2.LINE_AA)
         cv2.putText(stats_img,color_names[color] + ' ' + str(num_strings) + ' strings, ' +
                     str(round(num_strings * 2.44/(12*3), 1)) + ' yards', (25,i*width+13), font, 0.3,(0,0,0),1,cv2.LINE_AA)
         i += 1
 
-    return stats_img
+    return stats_img, color_order
 
 if __name__ == "__main__":
     # construct the argument parser and parse the arguments
@@ -250,7 +272,8 @@ if __name__ == "__main__":
     cv2.imwrite(img_name + '_resized.png', img)
     color_img = quantize_img_num(img, args["clusters"], options)
     cv2.imwrite(img_name + "_chosen_colors_no_grid.png", color_img)
-    lined_img = add_lines(color_img)
-    cv2.imwrite(img_name + "_chosen_colors.png", lined_img)
-    stats_img = make_color_stats(color_img)
+    stats_img, color_order = make_color_stats(color_img)
     cv2.imwrite(img_name + "_stats_img.png", stats_img)
+
+    lined_img = add_lines_and_symbols(color_img, color_order)
+    cv2.imwrite(img_name + "_chosen_colors.png", lined_img)
