@@ -2,7 +2,7 @@
 
 Creates templates for latch hook projects given 
   * an input image, 
-  * a palette of colors (currently set to be the options available from [Herrschners](https://www.herrschners.com/product/herrschners%26%23174-+pre-cut+latch+hook+rug+yarn.do) 
+  * a palette of colors (currently set to be the options available from [Herrschners](https://www.herrschners.com/product/herrschners%26%23174-+pre-cut+latch+hook+rug+yarn.do))
   * an optional desired size
   
 An example of an input and its corresponding output template:
