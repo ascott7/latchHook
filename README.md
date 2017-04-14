@@ -7,7 +7,7 @@ Creates templates for latch hook projects given
   
 An example of an input and its corresponding output template:
 
-Before | After
---- | ---
-<img src="https://yt3.ggpht.com/-kdzsktQIjDk/AAAAAAAAAAI/AAAAAAAAAAA/No6GbQL0YPM/s900-c-k-no-mo-rj-c0xffffff/photo.jpg" width=200>|<img src="http://i.imgur.com/9OQlpXA.png" width=200>
+Input | Ouput Template | Strings Needed
+--- | --- | ---
+<img src="https://yt3.ggpht.com/-kdzsktQIjDk/AAAAAAAAAAI/AAAAAAAAAAA/No6GbQL0YPM/s900-c-k-no-mo-rj-c0xffffff/photo.jpg" width=300>|<img src="http://i.imgur.com/jd7n0pu.jpg" width=400> | <img src="http://i.imgur.com/yKKt6bL.png" width=200>
 
