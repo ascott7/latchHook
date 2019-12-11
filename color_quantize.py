@@ -4,6 +4,8 @@ from numpy import array, uint8
 import argparse
 import cv2, os
 
+COLOR_NAMES_FILE = 'color_names.txt'
+
 def resize2(img, args):
     """
     Resizes an image based on user input. If the user enters a width and/or
@@ -64,7 +66,7 @@ def resize2(img, args):
     palette = []
     palette_img = np.zeros((1, len(options), 3))
     i = 0
-    for _, key in options.iteritems():
+    for _, key in options.items():
         palette.extend([int(key[2]), int(key[1]), int(key[0])])
         palette_img[0][i] = key
         i += 1
@@ -108,7 +110,7 @@ def quantize_img_num(img, num_colors, options):
 
         # prepare to remove least used color from palette
         minColorNum, minColor = float('inf'), None
-        for key, val in colors.iteritems():
+        for key, val in colors.items():
             
             if val < minColorNum and key != '000000':
                 minColor = key
@@ -116,7 +118,7 @@ def quantize_img_num(img, num_colors, options):
                 
         # remove any colors that weren't used at all
         colorOptions = options.copy()
-        for colorName, colorVal in colorOptions.iteritems():
+        for colorName, colorVal in colorOptions.items():
             valName = '%.2x%.2x%.2x' % (colorVal[2], colorVal[1], colorVal[0])
             if valName not in colors:
                 del options[colorName]
@@ -126,7 +128,7 @@ def quantize_img_num(img, num_colors, options):
             break
         
         # otherwise remove the least used color and keep going
-        for colorName, colorVal in options.iteritems():
+        for colorName, colorVal in options.items():
             valName = '%.2x%.2x%.2x' % (colorVal[2], colorVal[1], colorVal[0])
             if valName == minColor:
                 del options[colorName]
@@ -153,7 +155,7 @@ def quantize_img(img, options):
         # distance ((r1-r2)^2 + (g1-b2)^2 + (b1-b2)^2) between the corresponding pixels
         # in the image and the solid color image
         i = 0
-        for name, color in options.iteritems():
+        for name, color in options.items():
             solid_img = np.zeros((rows, cols, 3), np.uint8)
             solid_img[:, :, :] = color
             full_color_regions[:, :, :, i] = solid_img
@@ -217,8 +219,8 @@ def make_color_stats(img):
     image (aka how much of each string color is needed). Returns an image that
     contains these numbers.
     """
-    color_names = eval(open('color_names.txt', 'r').read())
-    color_names = dict(('%.2x%.2x%.2x'%(int(v[2]), int(v[1]), int(v[0])),k) for k,v in color_names.iteritems())
+    color_names = eval(open(COLOR_NAMES_FILE, 'r').read())
+    color_names = dict(('%.2x%.2x%.2x'%(int(v[2]), int(v[1]), int(v[0])),k) for k,v in color_names.items())
     colors = {}
     rows,cols = img.shape[:2]
     width = 20
@@ -235,7 +237,7 @@ def make_color_stats(img):
     stats_img = np.ones((len(colors)*width, 250, 3), dtype=np.uint8)*255
     color_order = {}
     i = 0
-    for color, num_strings in colors.iteritems():
+    for color, num_strings in colors.items():
         color_order[color] = i
         stats_img[i*width + 2: i*width + 19, 2:19] = [[[int(color[4:6], 16), int(color[2:4], 16), int(color[0:2], 16)]] * 17] * 17
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -266,7 +268,7 @@ if __name__ == "__main__":
     img = cv2.imread(args["image"])
     img_name = os.path.splitext(args["image"])[0]
 
-    options = eval(open('color_names.txt', 'r').read())
+    options = eval(open(COLOR_NAMES_FILE, 'r').read())
     
     img = resize2(img, args)
     cv2.imwrite(img_name + '_resized.png', img)
