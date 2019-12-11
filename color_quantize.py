@@ -31,59 +31,6 @@ def resize2(img, args):
     return cv2.resize(img, (int(cols / ratio), int(rows / ratio)), interpolation=cv2.INTER_AREA)
 
 
-"""def cluster_img(image, n_clusters):
-    # load the image and grab its width and height
-    (h, w) = image.shape[:2]
-
-    # convert the image from the RGB color space to the L*a*b*
-    # color space -- since we will be clustering using k-means
-    # which is based on the euclidean distance, we'll use the
-    # L*a*b* color space where the euclidean distance implies
-    # perceptual meaning
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    image = image.reshape((image.shape[0] * image.shape[1], 3))
-
-    # apply k-means using the specified number of clusters and
-    # then create the quantized image based on the predictions
-    clt = MiniBatchKMeans(n_clusters = n_clusters)
-    labels = clt.fit_predict(image)
-    quant = clt.cluster_centers_.astype("uint8")[labels]
- 
-    # reshape the feature vectors to images
-    quant = quant.reshape((h, w, 3))
-    image = image.reshape((h, w, 3))
- 
-    # convert from L*a*b* to RGB
-    quant = cv2.cvtColor(quant, cv2.COLOR_LAB2BGR)
-    image = cv2.cvtColor(image, cv2.COLOR_LAB2BGR)
-
-    return quant
-"""
-"""def cga_quantize(img, num_colors, options):
-    cv2.imwrite('tmp_cv_out.png', img)
-    #pal_image= Image.new("P", (1,1))
-    img = Image.open('tmp_cv_out.png')
-    palette = []
-    palette_img = np.zeros((1, len(options), 3))
-    i = 0
-    for _, key in options.items():
-        palette.extend([int(key[2]), int(key[1]), int(key[0])])
-        palette_img[0][i] = key
-        i += 1
-    cv2.imwrite('palette_img.png', palette_img)
-    print('starting quatization')
-    #pal_image= Image.new("P", (1,1))
-    #pal_image.putpalette(palette)
-    pal_image = Image.open('palette_img.png')
-    pal_image = pal_image.quantize(colors=len(options))
-    #palette_obj = ImagePalette.ImagePalette(palette=palette, size=len(options)*3)
-    #new_img = quantizetopalette(img, palette=pal_image)
-    new_img = img.convert('P', palette=pal_image, dither=None)
-    new_img.save('tmp_pil_out.png', "PNG")
-    print('quantization done')
-    cv_img = cv2.imread('tmp_pil_out.png')
-    return cv_img
-"""
 def quantize_img_num(img, num_colors, options):
     """
     Given an image, a number of colors to use and a dictionary of colors of the form
