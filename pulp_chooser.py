@@ -30,7 +30,11 @@ class PulpChooser(ColorChooser):
                 index = row * width + col
                 colors.append(
                     LpVariable.dicts(
-                        f"colors{index}", list(range(len(self.color_options))), 0, 1, cat="Integer"
+                        f"colors{index}",
+                        list(range(len(self.color_options))),
+                        0,
+                        1,
+                        cat="Integer",
                     )
                 )
                 # choose exactly 1 color per pixel
@@ -86,6 +90,8 @@ class PulpChooser(ColorChooser):
 
 
 and_count = 0
+
+
 def addAnd(prob, a, b):
     global and_count
     and_var = LpVariable(f"and_var{and_count}", 0, 1, cat="Integer")
@@ -96,6 +102,8 @@ def addAnd(prob, a, b):
 
 
 or_count = 0
+
+
 def addOr(prob, a, b):
     global or_count
     or_var = LpVariable(f"or_var{or_count}", 0, 1, cat="Integer")
@@ -114,6 +122,8 @@ def addOrList(prob, ints):
 
 
 implies_count = 0
+
+
 def addImplies(prob, a, b):
     global implies_count
     implies_var = LpVariable(f"implies_var{implies_count}", 0, 1, cat="Integer")
@@ -122,4 +132,3 @@ def addImplies(prob, a, b):
     prob += implies_var >= 1 - a
     prob += implies_var >= b
     return implies_var
-
