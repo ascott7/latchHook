@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import json
 import os
 import sys
 
@@ -24,5 +27,7 @@ if __name__ == "__main__":
             filename, ext = os.path.splitext(f)
             if ext == ".jpg":
                 img = cv2.imread(os.path.join(subdir, f))
-                colors[filename[8:]] = chooseColor(img).astype("uint8")
-    print(colors)
+                colors[filename[8:]] = chooseColor(img).astype("uint8").tolist()
+    print(f"Colors: {colors}\n\nSaving to {sys.argv[2]}")
+    with open(sys.argv[2], "w") as f:
+        json.dump(colors, f)
