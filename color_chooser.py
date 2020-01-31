@@ -82,7 +82,7 @@ class ColorChooser:
                         (0, 0, 0),
                         2,
                     )
-                if j % 10 == 9 and j > 0:
+                if (j - rows) % 10 == 9 and j > 0:
                     cv2.line(
                         new_img,
                         (i * square_width, j * square_width + square_width - 1),
