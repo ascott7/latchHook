@@ -58,7 +58,7 @@ class GreedyChooser(ColorChooser):
         """
         Given an image and a dictionary of the form {colorname: BGR val}, returns an image
         where every pixel has been replaced by the most similar color in the dictionary.
-        Similarity is determined by squared distance in the L*A*B* color space. 
+        Similarity is determined by squared distance in the L*A*B* color space.
         """
         n_colors = len(self.color_options)
         rows, cols = img.shape[:2]

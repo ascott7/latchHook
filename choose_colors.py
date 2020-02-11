@@ -6,7 +6,6 @@ import os
 
 import cv2
 import numpy as np
-from numpy import array, uint8
 
 from greedy_chooser import GreedyChooser
 from pulp_chooser import PulpChooser

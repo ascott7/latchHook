@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from numpy import array, uint8
-from pulp import *
+from pulp import LpProblem, LpMinimize, LpVariable
 
 from color_chooser import ColorChooser
 

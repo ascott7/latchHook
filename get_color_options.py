@@ -16,7 +16,7 @@ def chooseColor(img):
     rows, cols = img.shape[:2]
     gap = 5
     cropped_img = img[gap : rows - gap, gap : cols - gap]
-    return np.median(np.median(img, axis=0), axis=0)
+    return np.median(np.median(cropped_img, axis=0), axis=0)
 
 
 if __name__ == "__main__":
