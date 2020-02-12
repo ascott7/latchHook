@@ -12,50 +12,40 @@ class GreedyChooser(ColorChooser):
     def choose_colors_body(self, img, clusters, width, height):
         resized_img = cv2.resize(img, (width, height), interpolation=cv2.INTER_AREA)
         self.output_images["resized_img.png"] = resized_img
-        ret_img = None
-        self.color_options = self.color_options.copy()
+        selected_colors = np.ones(len(self.color_options), dtype=np.float64)
+        full_color_regions = get_full_color_regions(resized_img, self.color_options)
+        differences = get_color_differences(resized_img, full_color_regions)
+        rows, cols = resized_img.shape[:2]
         for n in range(len(self.color_options) - clusters + 1):
-            colors = {}
-
-            # find the best color match for each pixel
-            ret_img = self.quantize_img(resized_img)
-            rows, cols = ret_img.shape[:2]
-
-            # count the number of each color that we have
-            for i in range(0, cols):
-                for j in range(0, rows):
-                    pixel = ret_img[j, i]
-                    color = "%.2x%.2x%.2x" % (pixel[2], pixel[1], pixel[0])
-                    if color in colors:
-                        colors[color] += 1
-                    else:
-                        colors[color] = 1
-
-            # prepare to remove least used color from palette
-            minColorNum, minColor = float("inf"), None
-            for key, val in colors.items():
-
-                if val < minColorNum and key != "000000":
-                    minColor = key
-                    minColorNum = val
+            min_indices = np.nanargmin(
+                np.multiply(differences, selected_colors.reshape(np.array([1, 1, -1]))),
+                axis=2,
+            )
+            mask_indices, counts = np.unique(min_indices, return_counts=True)
 
             # remove any colors that weren't used at all
-            self.color_options_copy = self.color_options.copy()
-            for colorName, colorVal in self.color_options_copy.items():
-                valName = "%.2x%.2x%.2x" % (colorVal[2], colorVal[1], colorVal[0])
-                if valName not in colors:
-                    del self.color_options[colorName]
+            used_mask = np.full(len(self.color_options), np.nan)
+            used_mask[mask_indices] = 1
+            selected_colors = np.multiply(selected_colors, used_mask)
 
             # if we are at or below the target number of colors, we are done
-            if len(self.color_options) <= clusters:
+            if np.nansum(selected_colors) <= clusters:
                 break
 
-            # otherwise remove the least used color and keep going
-            for colorName, colorVal in self.color_options.items():
-                valName = "%.2x%.2x%.2x" % (colorVal[2], colorVal[1], colorVal[0])
-                if valName == minColor:
-                    del self.color_options[colorName]
-                    break
+            # remove least used color
+            least_used_color = np.nanargmin(counts)
+            selected_colors[mask_indices[least_used_color]] = np.nan
+
+        # get the min difference, aka the closest color match, for each pixel in the image
+        min_indices = np.nanargmin(
+            np.multiply(differences, selected_colors.reshape(np.array([1, 1, -1]))),
+            axis=2,
+        )
+        x, y = np.indices(min_indices.shape)
+
+        # the new image becomes the best match for each pixel
+        ret_img = full_color_regions[x, y, :, min_indices]
+
         return ret_img
 
     def quantize_img(self, img):
