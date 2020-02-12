@@ -2,6 +2,11 @@ import cv2
 import numpy as np
 
 from color_chooser import ColorChooser
+from utils import (
+    get_color_differences,
+    get_best_match_per_pixel,
+    get_full_color_regions,
+)
 
 
 class GreedyChooser(ColorChooser):
@@ -60,38 +65,15 @@ class GreedyChooser(ColorChooser):
         where every pixel has been replaced by the most similar color in the dictionary.
         Similarity is determined by squared distance in the L*A*B* color space.
         """
-        n_colors = len(self.color_options)
         rows, cols = img.shape[:2]
 
-        lab_img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-        for n in range(len(self.color_options) - n_colors + 1):
-            # create differences array, img_size x number of colors being considered
-            differences = np.zeros((rows, cols, len(self.color_options) - n), np.int32)
-            full_color_regions = np.zeros(
-                (rows, cols, 3, len(self.color_options) - n), np.uint8
-            )
+        full_color_regions = get_full_color_regions(img, self.color_options)
+        differences = get_color_differences(img, full_color_regions)
+        new_img = np.zeros((rows, cols, 3), np.uint8)
+        # get the min difference, aka the closest color match, for each pixel in the image
+        min_indices = np.argmin(differences, axis=2)
+        x, y = np.indices(min_indices.shape)
 
-            # for each color, make an image of entirely that color and take the squared
-            # distance ((r1-r2)^2 + (g1-b2)^2 + (b1-b2)^2) between the corresponding pixels
-            # in the image and the solid color image
-            i = 0
-            for name, color in self.color_options.items():
-                solid_img = np.zeros((rows, cols, 3), np.uint8)
-                solid_img[:, :, :] = color
-                full_color_regions[:, :, :, i] = solid_img
-                solid_img_lab = cv2.cvtColor(solid_img, cv2.COLOR_BGR2LAB)
-                diff = lab_img.astype("float") - solid_img_lab.astype("float")
-                diff = diff ** 2
-                differences[:, :, i] = np.sum(diff, axis=2)
-                i += 1
-
-            new_img = np.zeros((rows, cols, 3), np.uint8)
-
-            # get the min difference, aka the closest color match, for each pixel in the image
-            min_indices = np.argmin(differences, axis=2)
-            x, y = np.indices(min_indices.shape)
-
-            # the new image becomes the best match for each pixel
-            new_img = full_color_regions[x, y, :, min_indices]
-
+        # the new image becomes the best match for each pixel
+        new_img = full_color_regions[x, y, :, min_indices]
         return new_img
