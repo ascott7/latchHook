@@ -10,6 +10,7 @@ import numpy as np
 
 from color_chooser import ColorChooser
 from greedy_chooser import GreedyChooser
+from utils import quantize_img
 
 
 class BigToSmallChooser(ColorChooser):
@@ -45,8 +46,7 @@ class BigToSmallChooser(ColorChooser):
     def choose_colors_body(self, img, clusters, width, height):
         # get 1 color per pixel quickly
         rows, cols = img.shape[:2]
-        gc = GreedyChooser(self.color_options)
-        quantized_img = gc.choose_colors_body(img, len(self.color_options), cols, rows)
+        quantized_img = quantize_img(img, self.color_options)
         print("done quantizing")
 
         result_img = np.zeros((height, width, 3), np.uint8)

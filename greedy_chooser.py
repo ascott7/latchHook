@@ -47,22 +47,3 @@ class GreedyChooser(ColorChooser):
         ret_img = full_color_regions[x, y, :, min_indices]
 
         return ret_img
-
-    def quantize_img(self, img):
-        """
-        Given an image and a dictionary of the form {colorname: BGR val}, returns an image
-        where every pixel has been replaced by the most similar color in the dictionary.
-        Similarity is determined by squared distance in the L*A*B* color space.
-        """
-        rows, cols = img.shape[:2]
-
-        full_color_regions = get_full_color_regions(img, self.color_options)
-        differences = get_color_differences(img, full_color_regions)
-        new_img = np.zeros((rows, cols, 3), np.uint8)
-        # get the min difference, aka the closest color match, for each pixel in the image
-        min_indices = np.argmin(differences, axis=2)
-        x, y = np.indices(min_indices.shape)
-
-        # the new image becomes the best match for each pixel
-        new_img = full_color_regions[x, y, :, min_indices]
-        return new_img
