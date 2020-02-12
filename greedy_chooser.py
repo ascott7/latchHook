@@ -4,7 +4,6 @@ import numpy as np
 from color_chooser import ColorChooser
 from utils import (
     get_color_differences,
-    get_best_match_per_pixel,
     get_full_color_regions,
 )
 
