@@ -58,3 +58,12 @@ def quantize_img(img, color_options):
     # the new image becomes the best match for each pixel
     new_img = full_color_regions[x, y, :, min_indices]
     return new_img
+
+
+def calculate_total_cost(differences, selected_colors):
+    return np.sum(
+        np.nanmin(
+            np.multiply(differences, selected_colors.reshape(np.array([1, 1, -1]))),
+            axis=2,
+        )
+    )
