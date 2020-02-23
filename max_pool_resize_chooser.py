@@ -10,7 +10,8 @@ import numpy as np
 
 from color_chooser import ColorChooser
 from greedy_chooser import GreedyChooser
-from utils import quantize_img
+from utils import quantize_img, get_full_color_regions
+from tqdm import tqdm
 
 
 class MaxPoolResizeChooser(ColorChooser):
@@ -43,22 +44,71 @@ class MaxPoolResizeChooser(ColorChooser):
                 result[orig_color_str] += covered_width * covered_height
         return result
 
+    def calculate_total_score(self, scores, selected_colors):
+        return np.sum(
+            np.max(
+                np.multiply(scores, selected_colors.reshape(np.array([1, 1, -1]))),
+                axis=2,
+            )
+        )
+
     def choose_colors_body(self, img, clusters, width, height):
         # get 1 color per pixel quickly
         rows, cols = img.shape[:2]
         quantized_img = quantize_img(img, self.color_options)
         print("done quantizing")
 
-        result_img = np.zeros((height, width, 3), np.uint8)
+        scores = np.zeros((height, width, len(self.color_options)), np.int32)
+        color_indicies = {
+            self.arr_to_str(v): i for i, v in enumerate(self.color_options.values())
+        }
+        full_color_regions = get_full_color_regions(width, height, self.color_options)
         for resized_col in range(width):
             for resized_row in range(height):
                 square_components = self.calc_new_square_components(
                     quantized_img, resized_col, resized_row, width, height
                 )
-                sorted_components = sorted(
-                    square_components.items(), key=lambda item: item[1], reverse=True
-                )
-                result_img[resized_row, resized_col, :] = self.str_to_arr(
-                    sorted_components[0][0]
-                )
-        return result_img
+                for color_name, score in square_components.items():
+                    scores[resized_row, resized_col, color_indicies[color_name]] = score
+
+        best_selected_colors = np.hstack(
+            (
+                np.ones(clusters, dtype=np.float64),
+                np.zeros(len(self.color_options) - clusters, dtype=np.float64),
+            )
+        )
+        best_score = self.calculate_total_score(scores, best_selected_colors)
+        for i in tqdm(range(clusters + 1, len(self.color_options))):
+            new_selection_options = []
+            # don't bother with colors which didn't get any score at all
+            new_choice_score = self.calculate_total_score(
+                scores,
+                np.hstack(
+                    (
+                        np.zeros(i),
+                        np.array([1]),
+                        np.zeros(len(self.color_options) - i - 1),
+                    )
+                ),
+            )
+            if (new_choice_score) == 0:
+                continue
+            for j in range(len(best_selected_colors)):
+                if best_selected_colors[j] == 1:
+                    new_selection = best_selected_colors.copy()
+                    new_selection[j] = 0
+                    new_selection[i] = 1
+                    new_selection_options.append(new_selection)
+            # for each currently chosen color, try replacing it with color i
+            for new_selection_option in new_selection_options:
+                score = self.calculate_total_score(scores, new_selection_option)
+                if score > best_score:
+                    best_score = score
+                    best_selected_colors = new_selection_option
+        # get the best score per pixel
+        max_indices = np.argmax(
+            np.multiply(scores, best_selected_colors.reshape(np.array([1, 1, -1]))),
+            axis=2,
+        )
+        x, y = np.indices(max_indices.shape)
+        return full_color_regions[x, y, :, max_indices]

@@ -15,9 +15,9 @@ class GreedyChooser(ColorChooser):
                 np.full(len(self.color_options) - clusters, np.nan, dtype=np.float64),
             )
         )
-        full_color_regions = get_full_color_regions(resized_img, self.color_options)
-        differences = get_color_differences(resized_img, full_color_regions)
         rows, cols = resized_img.shape[:2]
+        full_color_regions = get_full_color_regions(cols, rows, self.color_options)
+        differences = get_color_differences(resized_img, full_color_regions)
         best_cost = calculate_total_cost(differences, best_selected_colors)
         for i in range(clusters + 1, len(self.color_options)):
             new_selection_options = []

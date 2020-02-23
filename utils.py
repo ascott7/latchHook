@@ -2,15 +2,14 @@ import cv2
 import numpy as np
 
 
-def get_full_color_regions(img, color_options):
+def get_full_color_regions(width, height, color_options):
     """
     Given an image and a dictionary of the form {colorname: BGR val}, returns a
     numpy array with a full image per BGR color value
     """
-    rows, cols = img.shape[:2]
-    full_color_regions = np.zeros((rows, cols, 3, len(color_options)), np.uint8)
+    full_color_regions = np.zeros((height, width, 3, len(color_options)), np.uint8)
     for i, (name, color) in enumerate(color_options.items()):
-        solid_img = np.zeros((rows, cols, 3), np.uint8)
+        solid_img = np.zeros((height, width, 3), np.uint8)
         solid_img[:, :, :] = color
         full_color_regions[:, :, :, i] = solid_img
     return full_color_regions
@@ -48,7 +47,7 @@ def quantize_img(img, color_options):
     """
     rows, cols = img.shape[:2]
 
-    full_color_regions = get_full_color_regions(img, color_options)
+    full_color_regions = get_full_color_regions(cols, rows, color_options)
     differences = get_color_differences(img, full_color_regions)
     new_img = np.zeros((rows, cols, 3), np.uint8)
     # get the min difference, aka the closest color match, for each pixel in the image
