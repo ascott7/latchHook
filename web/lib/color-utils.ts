@@ -1,4 +1,5 @@
 import { PaletteEntry } from './color-palette';
+import convert from 'color-convert';
 
 /**
  * Calculate squared Euclidean distance between two LAB colors
@@ -23,8 +24,6 @@ export function rgbToLabArray(
   width: number,
   height: number
 ): Float64Array {
-  // We'll need color-convert for this
-  const convert = require('color-convert');
   const numPixels = width * height;
   const labArray = new Float64Array(numPixels * 3);
 
