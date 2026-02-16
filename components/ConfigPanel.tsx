@@ -10,13 +10,11 @@ interface ConfigPanelProps {
 }
 
 export interface GenerateConfig {
-  width?: number;
-  height?: number;
+  width: number;
+  height: number;
   clusters: number;
   method: 'greedy' | 'mpr';
 }
-
-type DimensionMode = 'width' | 'height';
 
 export function ConfigPanel({
   imageWidth,
@@ -24,29 +22,49 @@ export function ConfigPanel({
   onGenerate,
   isGenerating,
 }: ConfigPanelProps) {
-  const [dimensionMode, setDimensionMode] = useState<DimensionMode>('width');
-  const [dimensionValue, setDimensionValue] = useState<number>(80);
-  const [colorCount, setColorCount] = useState<number>(10);
+  const [widthStr, setWidthStr] = useState<string>('80');
+  const [heightStr, setHeightStr] = useState<string>('');
+  const [colorCountStr, setColorCountStr] = useState<string>('10');
   const [method, setMethod] = useState<'greedy' | 'mpr'>('greedy');
+  const [lastEdited, setLastEdited] = useState<'width' | 'height'>('width');
 
-  // Calculate the other dimension based on aspect ratio
-  const calculatedDimension = imageWidth && imageHeight
-    ? dimensionMode === 'width'
-      ? Math.round((imageHeight / imageWidth) * dimensionValue)
-      : Math.round((imageWidth / imageHeight) * dimensionValue)
-    : null;
+  // Auto-compute other dimension when one changes, based on aspect ratio
+  useEffect(() => {
+    if (!imageWidth || !imageHeight) return;
+
+    const aspectRatio = imageWidth / imageHeight;
+
+    if (lastEdited === 'width') {
+      const w = parseInt(widthStr, 10);
+      if (!isNaN(w) && w > 0) {
+        const calculatedHeight = Math.round(w / aspectRatio);
+        setHeightStr(calculatedHeight.toString());
+      }
+    } else {
+      const h = parseInt(heightStr, 10);
+      if (!isNaN(h) && h > 0) {
+        const calculatedWidth = Math.round(h * aspectRatio);
+        setWidthStr(calculatedWidth.toString());
+      }
+    }
+  }, [widthStr, heightStr, lastEdited, imageWidth, imageHeight]);
 
   const handleGenerate = () => {
+    const width = parseInt(widthStr, 10);
+    const height = parseInt(heightStr, 10);
+    const clusters = parseInt(colorCountStr, 10);
+
+    // Validate and use defaults if invalid
+    const validWidth = !isNaN(width) && width >= 20 && width <= 120 ? width : 80;
+    const validHeight = !isNaN(height) && height >= 20 && height <= 120 ? height : 80;
+    const validClusters = !isNaN(clusters) && clusters >= 2 && clusters <= 25 ? clusters : 10;
+
     const config: GenerateConfig = {
-      clusters: colorCount,
+      width: validWidth,
+      height: validHeight,
+      clusters: validClusters,
       method,
     };
-
-    if (dimensionMode === 'width') {
-      config.width = dimensionValue;
-    } else {
-      config.height = dimensionValue;
-    }
 
     onGenerate(config);
   };
@@ -54,104 +72,80 @@ export function ConfigPanel({
   const canGenerate = imageWidth !== null && imageHeight !== null && !isGenerating;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Configuration</h3>
-
-        {/* Dimension Mode Toggle */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Dimension Mode
-          </label>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setDimensionMode('width')}
-              className={`
-                flex-1 px-4 py-2 rounded-lg border-2 transition-colors
-                ${
-                  dimensionMode === 'width'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-300 hover:border-gray-400'
-                }
-              `}
-            >
-              Set Width
-            </button>
-            <button
-              type="button"
-              onClick={() => setDimensionMode('height')}
-              className={`
-                flex-1 px-4 py-2 rounded-lg border-2 transition-colors
-                ${
-                  dimensionMode === 'height'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-300 hover:border-gray-400'
-                }
-              `}
-            >
-              Set Height
-            </button>
-          </div>
-        </div>
-
-        {/* Dimension Input */}
-        <div className="mb-4">
+    <div className="space-y-4">
+      {/* Width & Height Side-by-Side */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
           <label
-            htmlFor="dimension"
+            htmlFor="width"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            {dimensionMode === 'width' ? 'Width' : 'Height'} (pixels)
+            Width (px)
           </label>
           <input
-            id="dimension"
-            type="number"
-            min={20}
-            max={120}
-            value={dimensionValue}
-            onChange={(e) => setDimensionValue(parseInt(e.target.value, 10))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            id="width"
+            type="text"
+            value={widthStr}
+            onChange={(e) => {
+              setWidthStr(e.target.value);
+              setLastEdited('width');
+            }}
+            disabled={!imageWidth || !imageHeight}
+            placeholder="80"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
-          {calculatedDimension !== null && (
-            <p className="mt-1 text-sm text-gray-600">
-              Calculated {dimensionMode === 'width' ? 'height' : 'width'}:{' '}
-              {calculatedDimension}px
-            </p>
-          )}
-          <p className="mt-1 text-xs text-gray-500">
-            Range: 20-120 pixels (default: 80)
-          </p>
+          <p className="mt-1 text-xs text-gray-500">Range: 20-120</p>
         </div>
 
-        {/* Color Count */}
-        <div className="mb-4">
+        <div>
+          <label
+            htmlFor="height"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Height (px)
+          </label>
+          <input
+            id="height"
+            type="text"
+            value={heightStr}
+            onChange={(e) => {
+              setHeightStr(e.target.value);
+              setLastEdited('height');
+            }}
+            disabled={!imageWidth || !imageHeight}
+            placeholder="80"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+          />
+          <p className="mt-1 text-xs text-gray-500">Range: 20-120</p>
+        </div>
+      </div>
+
+      {/* Colors & Method Side-by-Side */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
           <label
             htmlFor="colors"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Number of Colors
+            Colors
           </label>
           <input
             id="colors"
-            type="number"
-            min={2}
-            max={25}
-            value={colorCount}
-            onChange={(e) => setColorCount(parseInt(e.target.value, 10))}
+            type="text"
+            value={colorCountStr}
+            onChange={(e) => setColorCountStr(e.target.value)}
+            placeholder="10"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
-          <p className="mt-1 text-xs text-gray-500">
-            Range: 2-25 colors (default: 10)
-          </p>
+          <p className="mt-1 text-xs text-gray-500">Range: 2-25</p>
         </div>
 
-        {/* Method Selection */}
-        <div className="mb-6">
+        <div>
           <label
             htmlFor="method"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Color Selection Method
+            Method
           </label>
           <select
             id="method"
@@ -159,64 +153,62 @@ export function ConfigPanel({
             onChange={(e) => setMethod(e.target.value as 'greedy' | 'mpr')}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           >
-            <option value="greedy">Greedy (Recommended)</option>
-            <option value="mpr">Max Pool Resize</option>
+            <option value="greedy">Greedy</option>
+            <option value="mpr">Max Pool</option>
           </select>
           <p className="mt-1 text-xs text-gray-500">
-            {method === 'greedy'
-              ? 'Fast algorithm that minimizes color distance'
-              : 'Considers full-resolution image, may be slower'}
+            {method === 'greedy' ? 'Fast (recommended)' : 'High quality'}
           </p>
         </div>
-
-        {/* Generate Button */}
-        <button
-          onClick={handleGenerate}
-          disabled={!canGenerate}
-          className={`
-            w-full px-6 py-3 rounded-lg font-medium text-white
-            transition-colors flex items-center justify-center gap-2
-            ${
-              canGenerate
-                ? 'bg-blue-600 hover:bg-blue-700'
-                : 'bg-gray-300 cursor-not-allowed'
-            }
-          `}
-        >
-          {isGenerating ? (
-            <>
-              <svg
-                className="animate-spin h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              Generating...
-            </>
-          ) : (
-            'Generate Template'
-          )}
-        </button>
-
-        {!canGenerate && !isGenerating && (
-          <p className="mt-2 text-sm text-gray-600 text-center">
-            Please upload an image first
-          </p>
-        )}
       </div>
+
+      {/* Generate Button */}
+      <button
+        onClick={handleGenerate}
+        disabled={!canGenerate}
+        className={`
+          w-full px-6 py-3 rounded-lg font-medium text-white
+          transition-colors flex items-center justify-center gap-2
+          ${
+            canGenerate
+              ? 'bg-blue-600 hover:bg-blue-700'
+              : 'bg-gray-300 cursor-not-allowed'
+          }
+        `}
+      >
+        {isGenerating ? (
+          <>
+            <svg
+              className="animate-spin h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+            Generating...
+          </>
+        ) : (
+          'Generate Template'
+        )}
+      </button>
+
+      {!canGenerate && !isGenerating && (
+        <p className="mt-2 text-sm text-gray-600 text-center">
+          Please upload an image first
+        </p>
+      )}
     </div>
   );
 }

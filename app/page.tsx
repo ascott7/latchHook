@@ -55,13 +55,8 @@ export default function Home() {
       formData.append('image', uploadedFile);
       formData.append('clusters', config.clusters.toString());
       formData.append('method', config.method);
-
-      if (config.width !== undefined) {
-        formData.append('width', config.width.toString());
-      }
-      if (config.height !== undefined) {
-        formData.append('height', config.height.toString());
-      }
+      formData.append('width', config.width.toString());
+      formData.append('height', config.height.toString());
 
       const response = await fetch('/api/generate', {
         method: 'POST',
