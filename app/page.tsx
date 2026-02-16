@@ -39,6 +39,7 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<GenerateResponse | null>(null);
+  const [resultsMode, setResultsMode] = useState(false); // Track if we've entered results view
 
   // Editable grid state
   const [editableGrid, setEditableGrid] = useState<number[][] | null>(null);
@@ -170,6 +171,7 @@ export default function Home() {
 
       const data: GenerateResponse = await response.json();
       setResults(data);
+      setResultsMode(true); // Enter results mode
 
       // Initialize editable grid with deep copy
       setEditableGrid(data.grid.map((row) => [...row]));
@@ -186,7 +188,7 @@ export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Before generation: setup view. After: grid-maximized view
-  if (!results || !editableGrid || !dynamicColors) {
+  if (!resultsMode) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-2xl w-full space-y-6">
@@ -226,16 +228,25 @@ export default function Home() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      <ResultsDisplay
-        preview={results.preview}
-        grid={editableGrid}
-        dimensions={results.dimensions}
-        colors={dynamicColors}
-        totalStrings={results.totalStrings}
-        onCellChange={handleCellChange}
-        originalColors={results.colors}
-        onOpenSettings={() => setSettingsOpen(true)}
-      />
+      {results && editableGrid && dynamicColors ? (
+        <ResultsDisplay
+          preview={results.preview}
+          grid={editableGrid}
+          dimensions={results.dimensions}
+          colors={dynamicColors}
+          totalStrings={results.totalStrings}
+          onCellChange={handleCellChange}
+          originalColors={results.colors}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
+      ) : (
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Upload an image and generate a template to see results</p>
+          </div>
+        </div>
+      )}
 
       {/* Settings Drawer */}
       {settingsOpen && (
