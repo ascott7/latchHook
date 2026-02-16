@@ -21,6 +21,7 @@ export function TemplateGrid({ grid, colors, dimensions, onCellChange }: Templat
   const [containerWidth, setContainerWidth] = useState<number>(800);
   const [zoomMultiplier, setZoomMultiplier] = useState<number>(1.0);
   const [selectedColorIdx, setSelectedColorIdx] = useState<number | null>(null);
+  const [showNumbers, setShowNumbers] = useState<boolean>(true);
 
   // Measure container width with ResizeObserver
   useEffect(() => {
@@ -95,34 +96,50 @@ export function TemplateGrid({ grid, colors, dimensions, onCellChange }: Templat
         </div>
       )}
 
-      {/* Zoom Controls */}
-      <div className="flex items-center gap-4">
-        <span className="text-sm font-medium text-gray-700">Zoom:</span>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setZoomMultiplier(Math.max(0.5, zoomMultiplier - 0.25))}
-            disabled={zoomMultiplier <= 0.5}
-            className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            −
-          </button>
-          <span className="px-3 py-1 min-w-[60px] text-center border border-gray-200 rounded bg-gray-50">
-            {Math.round(zoomMultiplier * 100)}%
-          </span>
-          <button
-            onClick={() => setZoomMultiplier(Math.min(3, zoomMultiplier + 0.25))}
-            disabled={zoomMultiplier >= 3}
-            className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            +
-          </button>
-          <button
-            onClick={() => setZoomMultiplier(1.0)}
-            disabled={zoomMultiplier === 1.0}
-            className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Reset
-          </button>
+      {/* Controls */}
+      <div className="flex items-center gap-6 flex-wrap">
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium text-gray-700">Zoom:</span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setZoomMultiplier(Math.max(0.5, zoomMultiplier - 0.25))}
+              disabled={zoomMultiplier <= 0.5}
+              className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              −
+            </button>
+            <span className="px-3 py-1 min-w-[60px] text-center border border-gray-200 rounded bg-gray-50">
+              {Math.round(zoomMultiplier * 100)}%
+            </span>
+            <button
+              onClick={() => setZoomMultiplier(Math.min(3, zoomMultiplier + 0.25))}
+              disabled={zoomMultiplier >= 3}
+              className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              +
+            </button>
+            <button
+              onClick={() => setZoomMultiplier(1.0)}
+              disabled={zoomMultiplier === 1.0}
+              className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+
+        {/* Show Numbers Toggle */}
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showNumbers}
+              onChange={(e) => setShowNumbers(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-700">Show Numbers</span>
+          </label>
         </div>
       </div>
 
@@ -176,7 +193,7 @@ export function TemplateGrid({ grid, colors, dimensions, onCellChange }: Templat
                       cursor: onCellChange && selectedColorIdx !== null ? 'crosshair' : 'help',
                     }}
                   >
-                    {colorIdx}
+                    {showNumbers && colorIdx}
 
                     {/* Tooltip */}
                     <div

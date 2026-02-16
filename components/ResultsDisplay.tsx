@@ -29,7 +29,7 @@ interface ResultsDisplayProps {
   originalColors: Color[];
 }
 
-type Tab = 'preview' | 'template' | 'materials';
+type Tab = 'template' | 'materials';
 
 export function ResultsDisplay({
   preview,
@@ -40,10 +40,9 @@ export function ResultsDisplay({
   onCellChange,
   originalColors,
 }: ResultsDisplayProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('preview');
+  const [activeTab, setActiveTab] = useState<Tab>('template');
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'preview', label: 'Preview' },
     { id: 'template', label: 'Template' },
     { id: 'materials', label: 'Materials' },
   ];
@@ -102,29 +101,6 @@ export function ResultsDisplay({
 
       {/* Tab Content */}
       <div className="mt-6">
-        {activeTab === 'preview' && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Color Preview</h3>
-            <p className="text-sm text-gray-700">
-              Quick visual preview of your latch hook pattern with selected colors
-            </p>
-            <div className="flex justify-center p-8 bg-gray-50 rounded-lg border border-gray-200">
-              <img
-                src={preview}
-                alt="Pattern preview"
-                className="max-w-full h-auto shadow-lg"
-                style={{
-                  imageRendering: 'pixelated',
-                  maxHeight: '600px',
-                }}
-              />
-            </div>
-            <p className="text-xs text-gray-600 text-center">
-              Dimensions: {dimensions.width} × {dimensions.height} pixels
-            </p>
-          </div>
-        )}
-
         {activeTab === 'template' && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Latch Hook Template</h3>
