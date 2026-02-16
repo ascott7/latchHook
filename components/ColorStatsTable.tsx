@@ -23,19 +23,19 @@ export function ColorStatsTable({ colors, totalStrings }: ColorStatsTableProps) 
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Color
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Index
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Strings
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Yardage
               </th>
             </tr>
@@ -61,7 +61,7 @@ export function ColorStatsTable({ colors, totalStrings }: ColorStatsTableProps) 
                   <div className="text-sm font-medium text-gray-900">
                     {color.name}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-600">
                     {color.hex}
                   </div>
                 </td>
@@ -69,7 +69,7 @@ export function ColorStatsTable({ colors, totalStrings }: ColorStatsTableProps) 
                   <div className="text-sm text-gray-900">
                     {color.count.toLocaleString()}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-600">
                     {((color.count / totalStrings) * 100).toFixed(1)}%
                   </div>
                 </td>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { ImageUploader } from '@/components/ImageUploader';
 import { ConfigPanel, GenerateConfig } from '@/components/ConfigPanel';
 import { ResultsDisplay } from '@/components/ResultsDisplay';
@@ -75,7 +75,7 @@ export default function Home() {
     setRedoStack([]); // Clear redo stack on new change
   };
 
-  const undo = () => {
+  const undo = useCallback(() => {
     if (!editableGrid || undoStack.length === 0) return;
 
     const action = undoStack[undoStack.length - 1];
@@ -85,9 +85,9 @@ export default function Home() {
     setEditableGrid(newGrid);
     setUndoStack((prev) => prev.slice(0, -1));
     setRedoStack((prev) => [...prev, action]);
-  };
+  }, [editableGrid, undoStack]);
 
-  const redo = () => {
+  const redo = useCallback(() => {
     if (!editableGrid || redoStack.length === 0) return;
 
     const action = redoStack[redoStack.length - 1];
@@ -97,7 +97,7 @@ export default function Home() {
     setEditableGrid(newGrid);
     setRedoStack((prev) => prev.slice(0, -1));
     setUndoStack((prev) => [...prev, action]);
-  };
+  }, [editableGrid, redoStack]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -113,7 +113,7 @@ export default function Home() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  });
+  }, [undo, redo]);
 
   // Recompute colors dynamically from editable grid
   const dynamicColors = useMemo(() => {
