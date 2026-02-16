@@ -113,7 +113,7 @@ export function ImageUploader({ onImageSelected }: ImageUploaderProps) {
               alt="Preview"
               className="max-h-48 rounded-lg shadow-md"
             />
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-700">
               Click or drag to replace image
             </p>
           </div>
@@ -136,11 +136,11 @@ export function ImageUploader({ onImageSelected }: ImageUploaderProps) {
               <p className="text-lg font-medium text-gray-700">
                 Drop your image here
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-600">
                 or click to browse
               </p>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500">
               JPG, PNG, or WebP • Max 10MB
             </p>
           </div>

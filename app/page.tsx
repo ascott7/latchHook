@@ -91,7 +91,7 @@ export default function Home() {
           <h1 className="text-3xl font-bold text-gray-900">
             Latch Hook Pattern Generator
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-700">
             Convert your images into latch hook templates with color-optimized palettes
           </p>
         </div>
@@ -155,7 +155,7 @@ export default function Home() {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   No template generated yet
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-gray-600">
                   Upload an image and click &quot;Generate Template&quot; to get started
                 </p>
               </div>
@@ -167,7 +167,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="mt-16 bg-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <p className="text-center text-sm text-gray-500">
+          <p className="text-center text-sm text-gray-600">
             Latch Hook Pattern Generator • Built with Next.js and TypeScript
           </p>
         </div>

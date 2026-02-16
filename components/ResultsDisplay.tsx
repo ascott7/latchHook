@@ -86,7 +86,7 @@ export function ResultsDisplay({
                 ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-600 hover:text-gray-700 hover:border-gray-300'
                 }
               `}
             >
@@ -101,7 +101,7 @@ export function ResultsDisplay({
         {activeTab === 'preview' && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Color Preview</h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-700">
               Quick visual preview of your latch hook pattern with selected colors
             </p>
             <div className="flex justify-center p-8 bg-gray-50 rounded-lg border border-gray-200">
@@ -115,7 +115,7 @@ export function ResultsDisplay({
                 }}
               />
             </div>
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-gray-600 text-center">
               Dimensions: {dimensions.width} × {dimensions.height} pixels
             </p>
           </div>
@@ -124,7 +124,7 @@ export function ResultsDisplay({
         {activeTab === 'template' && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Latch Hook Template</h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-700">
               Interactive grid showing color placement. Each square contains a number
               corresponding to the color index in the materials table.
             </p>
@@ -135,7 +135,7 @@ export function ResultsDisplay({
         {activeTab === 'materials' && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Materials List</h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-700">
               Required yarn colors and quantities for your latch hook project
             </p>
             <ColorStatsTable colors={colors} totalStrings={totalStrings} />

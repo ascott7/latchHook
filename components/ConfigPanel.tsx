@@ -113,12 +113,12 @@ export function ConfigPanel({
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           {calculatedDimension !== null && (
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-600">
               Calculated {dimensionMode === 'width' ? 'height' : 'width'}:{' '}
               {calculatedDimension}px
             </p>
           )}
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-gray-500">
             Range: 20-120 pixels (default: 80)
           </p>
         </div>
@@ -140,7 +140,7 @@ export function ConfigPanel({
             onChange={(e) => setColorCount(parseInt(e.target.value, 10))}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-gray-500">
             Range: 2-25 colors (default: 10)
           </p>
         </div>
@@ -162,7 +162,7 @@ export function ConfigPanel({
             <option value="greedy">Greedy (Recommended)</option>
             <option value="mpr">Max Pool Resize</option>
           </select>
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-gray-500">
             {method === 'greedy'
               ? 'Fast algorithm that minimizes color distance'
               : 'Considers full-resolution image, may be slower'}
@@ -212,7 +212,7 @@ export function ConfigPanel({
         </button>
 
         {!canGenerate && !isGenerating && (
-          <p className="mt-2 text-sm text-gray-500 text-center">
+          <p className="mt-2 text-sm text-gray-600 text-center">
             Please upload an image first
           </p>
         )}

@@ -137,7 +137,7 @@ export function TemplateGrid({ grid, colors, dimensions }: TemplateGridProps) {
       </div>
 
       {/* Grid Info */}
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-gray-700">
         Grid size: {dimensions.width} × {dimensions.height} pixels
         {' • '}
         Blue lines appear every 10 squares (matching physical canvas)
