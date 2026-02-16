@@ -3,6 +3,12 @@
 import { useState } from 'react';
 import { TemplateGrid } from './TemplateGrid';
 import { ColorStatsTable } from './ColorStatsTable';
+import {
+  downloadPreviewImage,
+  downloadTemplateImage,
+  downloadStatsImage,
+  downloadAll,
+} from './download-utils';
 
 interface Color {
   index: number;
@@ -40,6 +46,34 @@ export function ResultsDisplay({
 
   return (
     <div className="space-y-4">
+      {/* Download Buttons */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={() => downloadAll(preview, grid, colors, dimensions, totalStrings)}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+        >
+          Download All
+        </button>
+        <button
+          onClick={() => downloadPreviewImage(preview)}
+          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+        >
+          Download Preview
+        </button>
+        <button
+          onClick={() => downloadTemplateImage(grid, colors, dimensions)}
+          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+        >
+          Download Template
+        </button>
+        <button
+          onClick={() => downloadStatsImage(colors, totalStrings)}
+          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+        >
+          Download Materials
+        </button>
+      </div>
+
       {/* Tab Navigation */}
       <div className="border-b border-gray-200">
         <nav className="flex -mb-px space-x-8">
