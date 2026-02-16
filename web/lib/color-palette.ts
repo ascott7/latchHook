@@ -1,4 +1,4 @@
-import colorNamesJson from '../../../public/color_names.json';
+import colorNamesJson from '../public/color_names.json';
 import convert from 'color-convert';
 
 export interface PaletteEntry {
