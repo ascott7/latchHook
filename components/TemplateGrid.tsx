@@ -30,16 +30,21 @@ export function TemplateGrid({
 }: TemplateGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(800);
+  const [containerHeight, setContainerHeight] = useState<number>(600);
 
-  // Measure container width with ResizeObserver
+  // Measure container width and height with ResizeObserver
   useEffect(() => {
     if (!containerRef.current) return;
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const width = entry.contentRect.width;
+        const height = entry.contentRect.height;
         if (width > 0) {
           setContainerWidth(width);
+        }
+        if (height > 0) {
+          setContainerHeight(height);
         }
       }
     });
@@ -54,8 +59,13 @@ export function TemplateGrid({
     return maxVal < 175 ? 'white' : 'black';
   };
 
-  // Calculate cell size to fit viewport, then apply zoom multiplier
-  const fitCellSize = Math.max(8, Math.min(30, Math.floor((containerWidth - 32) / dimensions.width)));
+  // Calculate cell size to fit BOTH width and height, then apply zoom multiplier
+  const padding = 32; // 16px padding on each side
+  const maxCellSizeByWidth = Math.floor((containerWidth - padding) / dimensions.width);
+  const maxCellSizeByHeight = Math.floor((containerHeight - padding) / dimensions.height);
+
+  // Use the smaller of the two to ensure it fits in both dimensions
+  const fitCellSize = Math.max(8, Math.min(30, Math.min(maxCellSizeByWidth, maxCellSizeByHeight)));
   const cellSize = fitCellSize * zoomMultiplier;
 
   const handleCellClick = (x: number, y: number) => {
