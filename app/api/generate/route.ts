@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import sharp from 'sharp';
 import { paletteEntries } from '@/lib/color-palette';
 import { decodeImage, resizeImage, encodePng, getDimensions } from '@/lib/image-utils';
 import { greedyChooseColors } from '@/lib/choosers/greedy-chooser';
@@ -127,12 +128,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate preview image (base64 PNG)
-    const previewBuffer = await encodePng(
-      result.pixels,
-      result.width,
-      result.height
-    );
+    // Generate preview image (base64 PNG) — upscaled 2x with nearest neighbor
+    const previewBuffer = await sharp(Buffer.from(result.pixels), {
+      raw: { width: result.width, height: result.height, channels: 3 },
+    })
+      .resize(result.width * 2, result.height * 2, { kernel: sharp.kernel.nearest })
+      .png()
+      .toBuffer();
     const previewBase64 = `data:image/png;base64,${previewBuffer.toString('base64')}`;
 
     // Calculate string counts for each color
