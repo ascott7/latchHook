@@ -23,31 +23,50 @@ export function ConfigPanel({
   isGenerating,
 }: ConfigPanelProps) {
   const [widthStr, setWidthStr] = useState<string>('80');
-  const [heightStr, setHeightStr] = useState<string>('');
+  const [heightStr, setHeightStr] = useState<string>('60');
   const [colorCountStr, setColorCountStr] = useState<string>('10');
   const [method, setMethod] = useState<'greedy' | 'mpr'>('greedy');
-  const [lastEdited, setLastEdited] = useState<'width' | 'height'>('width');
 
-  // Auto-compute other dimension when one changes, based on aspect ratio
+  // Initialize dimensions when image is uploaded
   useEffect(() => {
-    if (!imageWidth || !imageHeight) return;
+    if (!imageWidth || !imageHeight) {
+      setWidthStr('80');
+      setHeightStr('60');
+      return;
+    }
 
     const aspectRatio = imageWidth / imageHeight;
+    const defaultWidth = 80;
+    const calculatedHeight = Math.round(defaultWidth / aspectRatio);
+    setWidthStr(defaultWidth.toString());
+    setHeightStr(calculatedHeight.toString());
+  }, [imageWidth, imageHeight]);
 
-    if (lastEdited === 'width') {
-      const w = parseInt(widthStr, 10);
+  const handleWidthChange = (value: string) => {
+    setWidthStr(value);
+
+    if (imageWidth && imageHeight) {
+      const w = parseInt(value, 10);
       if (!isNaN(w) && w > 0) {
+        const aspectRatio = imageWidth / imageHeight;
         const calculatedHeight = Math.round(w / aspectRatio);
         setHeightStr(calculatedHeight.toString());
       }
-    } else {
-      const h = parseInt(heightStr, 10);
+    }
+  };
+
+  const handleHeightChange = (value: string) => {
+    setHeightStr(value);
+
+    if (imageWidth && imageHeight) {
+      const h = parseInt(value, 10);
       if (!isNaN(h) && h > 0) {
+        const aspectRatio = imageWidth / imageHeight;
         const calculatedWidth = Math.round(h * aspectRatio);
         setWidthStr(calculatedWidth.toString());
       }
     }
-  }, [widthStr, heightStr, lastEdited, imageWidth, imageHeight]);
+  };
 
   const handleGenerate = () => {
     const width = parseInt(widthStr, 10);
@@ -86,13 +105,9 @@ export function ConfigPanel({
             id="width"
             type="text"
             value={widthStr}
-            onChange={(e) => {
-              setWidthStr(e.target.value);
-              setLastEdited('width');
-            }}
-            disabled={!imageWidth || !imageHeight}
+            onChange={(e) => handleWidthChange(e.target.value)}
             placeholder="80"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <p className="mt-1 text-xs text-gray-500">Range: 20-120</p>
         </div>
@@ -108,13 +123,9 @@ export function ConfigPanel({
             id="height"
             type="text"
             value={heightStr}
-            onChange={(e) => {
-              setHeightStr(e.target.value);
-              setLastEdited('height');
-            }}
-            disabled={!imageWidth || !imageHeight}
-            placeholder="80"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            onChange={(e) => handleHeightChange(e.target.value)}
+            placeholder="60"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <p className="mt-1 text-xs text-gray-500">Range: 20-120</p>
         </div>
