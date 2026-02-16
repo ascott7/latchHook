@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ImageUploader } from '@/components/ImageUploader';
 import { ConfigPanel, GenerateConfig } from '@/components/ConfigPanel';
 import { ResultsDisplay } from '@/components/ResultsDisplay';
@@ -25,6 +25,13 @@ interface GenerateResponse {
   totalStrings: number;
 }
 
+interface UndoRedoAction {
+  x: number;
+  y: number;
+  oldColor: number;
+  newColor: number;
+}
+
 export default function Home() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [imageWidth, setImageWidth] = useState<number | null>(null);
@@ -33,18 +40,111 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<GenerateResponse | null>(null);
 
+  // Editable grid state
+  const [editableGrid, setEditableGrid] = useState<number[][] | null>(null);
+  const [undoStack, setUndoStack] = useState<UndoRedoAction[]>([]);
+  const [redoStack, setRedoStack] = useState<UndoRedoAction[]>([]);
+
+  const hasEdits = undoStack.length > 0;
+
   const handleImageSelected = (file: File, width: number, height: number) => {
     setUploadedFile(file);
     setImageWidth(width);
     setImageHeight(height);
-    setResults(null); // Clear previous results
+    setResults(null);
+    setEditableGrid(null);
+    setUndoStack([]);
+    setRedoStack([]);
     setError(null);
   };
+
+  // Cell editing callbacks
+  const handleCellChange = (x: number, y: number, newColorIdx: number) => {
+    if (!editableGrid) return;
+
+    const oldColorIdx = editableGrid[y][x];
+    if (oldColorIdx === newColorIdx) return; // No change
+
+    // Update grid
+    const newGrid = editableGrid.map((row) => [...row]);
+    newGrid[y][x] = newColorIdx;
+    setEditableGrid(newGrid);
+
+    // Push to undo stack
+    setUndoStack((prev) => [...prev, { x, y, oldColor: oldColorIdx, newColor: newColorIdx }]);
+    setRedoStack([]); // Clear redo stack on new change
+  };
+
+  const undo = () => {
+    if (!editableGrid || undoStack.length === 0) return;
+
+    const action = undoStack[undoStack.length - 1];
+    const newGrid = editableGrid.map((row) => [...row]);
+    newGrid[action.y][action.x] = action.oldColor;
+
+    setEditableGrid(newGrid);
+    setUndoStack((prev) => prev.slice(0, -1));
+    setRedoStack((prev) => [...prev, action]);
+  };
+
+  const redo = () => {
+    if (!editableGrid || redoStack.length === 0) return;
+
+    const action = redoStack[redoStack.length - 1];
+    const newGrid = editableGrid.map((row) => [...row]);
+    newGrid[action.y][action.x] = action.newColor;
+
+    setEditableGrid(newGrid);
+    setRedoStack((prev) => prev.slice(0, -1));
+    setUndoStack((prev) => [...prev, action]);
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z') {
+        e.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
+
+  // Recompute colors dynamically from editable grid
+  const dynamicColors = useMemo(() => {
+    if (!results || !editableGrid) return null;
+
+    const colorCounts = new Map<number, number>();
+    for (const row of editableGrid) {
+      for (const colorIdx of row) {
+        colorCounts.set(colorIdx, (colorCounts.get(colorIdx) || 0) + 1);
+      }
+    }
+
+    return results.colors.map((color) => ({
+      ...color,
+      count: colorCounts.get(color.index) || 0,
+      yardage: Math.round(((colorCounts.get(color.index) || 0) * 2.44) / 36 * 100) / 100,
+    }));
+  }, [editableGrid, results]);
 
   const handleGenerate = async (config: GenerateConfig) => {
     if (!uploadedFile) {
       setError('Please upload an image first');
       return;
+    }
+
+    // Warn if there are unsaved edits
+    if (hasEdits) {
+      const confirmed = window.confirm(
+        'You have unsaved edits. Regenerating will discard them. Continue?'
+      );
+      if (!confirmed) return;
     }
 
     setIsGenerating(true);
@@ -70,6 +170,11 @@ export default function Home() {
 
       const data: GenerateResponse = await response.json();
       setResults(data);
+
+      // Initialize editable grid with deep copy
+      setEditableGrid(data.grid.map((row) => [...row]));
+      setUndoStack([]);
+      setRedoStack([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Generation error:', err);
@@ -121,15 +226,17 @@ export default function Home() {
 
           {/* Right Column: Results */}
           <div className="lg:col-span-2">
-            {results ? (
+            {results && editableGrid && dynamicColors ? (
               <div className="bg-white rounded-lg shadow p-6">
                 <h2 className="text-xl font-semibold mb-4">3. Results</h2>
                 <ResultsDisplay
                   preview={results.preview}
-                  grid={results.grid}
+                  grid={editableGrid}
                   dimensions={results.dimensions}
-                  colors={results.colors}
+                  colors={dynamicColors}
                   totalStrings={results.totalStrings}
+                  onCellChange={handleCellChange}
+                  originalColors={results.colors}
                 />
               </div>
             ) : (

@@ -25,6 +25,8 @@ interface ResultsDisplayProps {
   dimensions: { width: number; height: number };
   colors: Color[];
   totalStrings: number;
+  onCellChange: (x: number, y: number, newColorIdx: number) => void;
+  originalColors: Color[];
 }
 
 type Tab = 'preview' | 'template' | 'materials';
@@ -35,6 +37,8 @@ export function ResultsDisplay({
   dimensions,
   colors,
   totalStrings,
+  onCellChange,
+  originalColors,
 }: ResultsDisplayProps) {
   const [activeTab, setActiveTab] = useState<Tab>('preview');
 
@@ -125,10 +129,14 @@ export function ResultsDisplay({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Latch Hook Template</h3>
             <p className="text-sm text-gray-700">
-              Interactive grid showing color placement. Each square contains a number
-              corresponding to the color index in the materials table.
+              Click a color from the palette, then click cells to paint. Use Ctrl+Z to undo.
             </p>
-            <TemplateGrid grid={grid} colors={colors} dimensions={dimensions} />
+            <TemplateGrid
+              grid={grid}
+              colors={originalColors}
+              dimensions={dimensions}
+              onCellChange={onCellChange}
+            />
           </div>
         )}
 

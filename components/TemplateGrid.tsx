@@ -13,12 +13,14 @@ interface TemplateGridProps {
   grid: number[][];
   colors: Color[];
   dimensions: { width: number; height: number };
+  onCellChange?: (x: number, y: number, newColorIdx: number) => void;
 }
 
-export function TemplateGrid({ grid, colors, dimensions }: TemplateGridProps) {
+export function TemplateGrid({ grid, colors, dimensions, onCellChange }: TemplateGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(800);
   const [zoomMultiplier, setZoomMultiplier] = useState<number>(1.0);
+  const [selectedColorIdx, setSelectedColorIdx] = useState<number | null>(null);
 
   // Measure container width with ResizeObserver
   useEffect(() => {
@@ -47,8 +49,52 @@ export function TemplateGrid({ grid, colors, dimensions }: TemplateGridProps) {
   const fitCellSize = Math.max(8, Math.min(30, Math.floor((containerWidth - 32) / dimensions.width)));
   const cellSize = fitCellSize * zoomMultiplier;
 
+  const handleCellClick = (x: number, y: number) => {
+    if (onCellChange && selectedColorIdx !== null) {
+      onCellChange(x, y, selectedColorIdx);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
+      {/* Color Palette */}
+      {onCellChange && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Select Color to Paint:
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {colors.map((color) => (
+              <button
+                key={color.index}
+                onClick={() => setSelectedColorIdx(color.index)}
+                className={`
+                  w-12 h-12 rounded border-2 transition-all flex items-center justify-center
+                  font-bold text-sm
+                  ${
+                    selectedColorIdx === color.index
+                      ? 'ring-2 ring-blue-300 border-blue-600 scale-110'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }
+                `}
+                style={{
+                  backgroundColor: color.hex,
+                  color: getTextColor(color.rgb),
+                }}
+                title={color.name}
+              >
+                {color.index}
+              </button>
+            ))}
+          </div>
+          {selectedColorIdx !== null && (
+            <p className="mt-2 text-sm text-gray-600">
+              Selected: {colors[selectedColorIdx].name} (click cells to paint)
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Zoom Controls */}
       <div className="flex items-center gap-4">
         <span className="text-sm font-medium text-gray-700">Zoom:</span>
@@ -113,6 +159,7 @@ export function TemplateGrid({ grid, colors, dimensions }: TemplateGridProps) {
                   <div
                     key={`${y}-${x}`}
                     className="group relative"
+                    onClick={() => handleCellClick(x, y)}
                     style={{
                       backgroundColor: color.hex,
                       border: '1px solid black',
@@ -126,7 +173,7 @@ export function TemplateGrid({ grid, colors, dimensions }: TemplateGridProps) {
                       fontSize: `${Math.max(8, cellSize * 0.4)}px`,
                       fontWeight: 'bold',
                       color: textColor,
-                      cursor: 'help',
+                      cursor: onCellChange && selectedColorIdx !== null ? 'crosshair' : 'help',
                     }}
                   >
                     {colorIdx}
