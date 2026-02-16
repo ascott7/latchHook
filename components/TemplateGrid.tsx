@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface Color {
   index: number;
@@ -16,7 +16,26 @@ interface TemplateGridProps {
 }
 
 export function TemplateGrid({ grid, colors, dimensions }: TemplateGridProps) {
-  const [zoom, setZoom] = useState<number>(1);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(800);
+  const [zoomMultiplier, setZoomMultiplier] = useState<number>(1.0);
+
+  // Measure container width with ResizeObserver
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        if (width > 0) {
+          setContainerWidth(width);
+        }
+      }
+    });
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   // Determine text color based on background brightness
   const getTextColor = (rgb: [number, number, number]): string => {
@@ -24,9 +43,9 @@ export function TemplateGrid({ grid, colors, dimensions }: TemplateGridProps) {
     return maxVal < 175 ? 'white' : 'black';
   };
 
-  // Cell size in pixels
-  const baseCellSize = 20;
-  const cellSize = baseCellSize * zoom;
+  // Calculate cell size to fit viewport, then apply zoom multiplier
+  const fitCellSize = Math.max(8, Math.min(30, Math.floor((containerWidth - 32) / dimensions.width)));
+  const cellSize = fitCellSize * zoomMultiplier;
 
   return (
     <div className="flex flex-col gap-4">
@@ -35,27 +54,37 @@ export function TemplateGrid({ grid, colors, dimensions }: TemplateGridProps) {
         <span className="text-sm font-medium text-gray-700">Zoom:</span>
         <div className="flex gap-2">
           <button
-            onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}
-            disabled={zoom <= 0.5}
+            onClick={() => setZoomMultiplier(Math.max(0.5, zoomMultiplier - 0.25))}
+            disabled={zoomMultiplier <= 0.5}
             className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             −
           </button>
           <span className="px-3 py-1 min-w-[60px] text-center border border-gray-200 rounded bg-gray-50">
-            {Math.round(zoom * 100)}%
+            {Math.round(zoomMultiplier * 100)}%
           </span>
           <button
-            onClick={() => setZoom(Math.min(3, zoom + 0.25))}
-            disabled={zoom >= 3}
+            onClick={() => setZoomMultiplier(Math.min(3, zoomMultiplier + 0.25))}
+            disabled={zoomMultiplier >= 3}
             className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             +
+          </button>
+          <button
+            onClick={() => setZoomMultiplier(1.0)}
+            disabled={zoomMultiplier === 1.0}
+            className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Reset
           </button>
         </div>
       </div>
 
       {/* Grid Container */}
-      <div className="border border-gray-300 rounded-lg overflow-auto max-h-[600px] bg-white">
+      <div
+        ref={containerRef}
+        className="border border-gray-300 rounded-lg overflow-auto max-h-[600px] bg-white"
+      >
         <div
           className="inline-block p-4"
           style={{
